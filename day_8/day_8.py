@@ -46,34 +46,40 @@ def find(i):
         parent[i] = find(parent[i])
     return parent[i]
 
-def union(i, j):
+def union(i, j) -> bool:
     ri, rj = find(i), find(j)
     if ri == rj:
-        return
+        return False
     # union by size
     if size[ri] < size[rj]:
         ri, rj = rj, ri
     parent[rj] = ri
     size[ri] += size[rj]
+    return True # merged two circuits
 
 
-points = file.copy()
-idx = {p: i for i, p in enumerate(points)}  # coordinate -> index
-
+idx = {p: i for i, p in enumerate(file)}  # coordinate -> index
+components = n
+last_merge = None
 K = 10 if n == 20 else 1000
-count = 0
 for (p1, p2), dist in sorted_distances.items():
-    union(idx[p1], idx[p2])
-    count += 1
-    if count == K:
-        break
+    if union(idx[p1], idx[p2]):
+        components -= 1
+        last_merge = (p1, p2)
+        if components == 1:
+            break
 
 
+"""
 sizes = Counter(find(i) for i in range(n))
 largest_three = sorted(sizes.values(), reverse=True)[:3]
-
 answer = largest_three[0] * largest_three[1] * largest_three[2]
-
 print(answer)
+"""
 
+x, y = last_merge[0], last_merge[1]
+
+x_X, y_X = int(x[0]), int(y[0])
+
+print(x_X * y_X)
 
