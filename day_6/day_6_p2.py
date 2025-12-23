@@ -1,90 +1,64 @@
-import numpy as np
+from math import prod
 
-file = open("example_input.txt").readlines()
-print("Raw file: ", file)
-file = [line.strip("\n") for line in file]
-print("Processed raw: ", file)
-grid_width = len(file[0])
+file = open("input.txt").readlines()
+file = [line.rstrip("\n") for line in file]
 
-for line in file:
-    if len(line) < grid_width:
-        while len(line) < grid_width:
-            line += " "
+# Pad all rows to equal width to index columns safely
+W = max(len(line) for line in file)
+file = [line.ljust(W) for line in file]
 
-print(file)
+# Split input into operator and digit rows
+op_row = file[-1]
+digit_rows = file[:-1]
+H = len(file)
 
-rows = len(file)
-last_row = rows-1
-grid = file[:-1]
-print(grid)
-# Clean data
-operations = [entry for entry in list(file[-1]) if entry != " "]
-print(operations)
-equations = [equation.rstrip("\n").split(" ") for equation in list(file[:-1])]
+# Find where the operators are (each one is one problem)
+op_cols = [i for i, ch in enumerate(op_row) if ch in "+*"]
 
+# Optional: detect "true separator columns" (blank in every row)
+is_sep = [all(file[r][c] == " " for r in range(H)) for c in range(W)]
 
-for col in range(grid_width):
-    if col == "":
-        pass
-print(equations)
-equations.reverse()
-print(equations)
-
-
-# Transpose equations matrix
-eq_transformed = []
-index = 0
-while index < len(equations[0]):
-    new = []
-    for equation in equations:
-        new.append(equation[index])
-    index += 1
-    eq_transformed.append(new)
-
-print("V1: ", eq_transformed)
-"""
-eq_transformed_v2 = []
-for eq in eq_transformed:
-    num_columns = len(max(eq, key=len))
-    new_eq = []
-    for num in eq:
-        if len(num) < num_columns:
-            while len(num) < num_columns:
-                num = "-" + num
-        new_eq.append(list(num))
-    eq_transformed_v2.append(new_eq)
-print("V2: ",eq_transformed_v2)
-
-eq_transformed_v3 = []
-for eq in eq_transformed_v2:
-    new_eq = []
-    index = 0
-    while index < len(eq):
-        new_nums = []
-        for number in eq:
-            new_nums.append(number[index])
-        index += 1
-        #print(new_nums)
-        new_eq.append("".join(new_nums))
-    eq_transformed_v3.append(new_eq)
-print("V3: ", eq_transformed_v3)
-    
-"""
-
-
-
-"""
-# Calculate sums of the different equations
-eq_sums = []
-for index, equation in enumerate(eq_transformed):
-    if operations[index] == "+":
-        eq_sums.append(sum(equation))
+# Build cut points between adjacent operators so each operator gets its own block
+cuts = [-1]
+for a, b in zip(op_cols, op_cols[1:]):
+    sep_candidates = [c for c in range(a + 1, b) if is_sep[c]]
+    if sep_candidates:
+        mid = (a + b) // 2
+        cut = min(sep_candidates, key=lambda c: abs(c - mid))
     else:
-        eq_sum = 1
-        for number in equation:
-            eq_sum *= number
-        eq_sums.append(eq_sum)
+        cut = (a + b) // 2
+    cuts.append(cut)
+cuts.append(W)
 
-# Total sum of the equations
+# Now compute each problem
+eq_sums = []
+for idx, op_c in enumerate(op_cols):
+    start = cuts[idx] + 1
+    end = cuts[idx + 1]
+
+    op = op_row[op_c]
+
+    # ensure operator column is inside the slice
+    if not (start <= op_c < end):
+        start = min(start, op_c)
+        end = max(end, op_c + 1)
+
+    # COLUMN is a number, read top->bottom, right->left
+    numbers = []
+    col = end - 1
+    while col >= start:
+        digits = []
+        for row in digit_rows:
+            ch = row[col]
+            if ch.isdigit():
+                digits.append(ch)
+        if digits:
+            numbers.append(int("".join(digits)))
+        col -= 1
+
+    if op == "+":
+        eq_sums.append(sum(numbers))
+    else:
+        eq_sums.append(prod(numbers))
+
 print(sum(eq_sums))
-"""

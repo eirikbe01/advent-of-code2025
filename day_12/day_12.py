@@ -76,5 +76,4 @@ def solve(lines):
 
 if __name__ == "__main__":
     file = open("input.txt", "r", encoding="utf-8").readlines()
-
     print(solve(file))

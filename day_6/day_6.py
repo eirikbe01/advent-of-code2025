@@ -14,6 +14,7 @@ while index < len(equations[0]):
     index += 1
     eq_transformed.append(new)
 
+
 # Calculate sums of the different equations
 eq_sums = []
 for index, equation in enumerate(eq_transformed):
