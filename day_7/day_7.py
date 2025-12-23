@@ -3,24 +3,8 @@
 
 file = open("input.txt").readlines()
 file = [list(line.strip()) for line in file]
-"""
-print("File: ", file)
-for line in file:
-    print(line, end="")
-"""
 
 
-def has_splitter(char: str):
-    if char == "^":
-        return True
-    else:
-        return False
-
-def has_beam(char: str):
-    if char == "|":
-        return True
-    else:
-        return False
 
 print()
 def draw_beams_and_count(grid: list[str]) -> int:
